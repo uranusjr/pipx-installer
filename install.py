@@ -41,7 +41,7 @@ def main():
     bindir = pathlib.Path(os.environ.get("PIPX_BIN_DIR") or DEFAULT_BIN_DIR)
     bindir.mkdir(parents=True, exist_ok=True)
 
-    pipx_exe = pathlib.Path(_find_exe(pipx_venv, "pipx"))
+    pipx_exe = pathlib.Path(_find_exe(pipx_venv, "pipx")).resolve()
     if pipx_exe.is_symlink():
         pipx_exe.symlink_to(bindir.joinpath(pipx_exe.name))
     else:
