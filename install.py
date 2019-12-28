@@ -31,20 +31,23 @@ def main():
     home.mkdir(parents=True, exist_ok=True)
 
     pipx_venv = home.joinpath("venvs", "pipx")
-    subprocess.check_call(
-        [sys.executable, "-m", "venv", "--prompt=pipx", str(pipx_venv)]
-    )
+    if not pipx_venv.is_dir():
+        subprocess.check_call(
+            [sys.executable, "-m", "venv", "--prompt=pipx", str(pipx_venv)]
+        )
 
     python = _find_exe(pipx_venv, "python")
-    subprocess.check_call([python, "-m", "pip", "install", "pipx"])
+    subprocess.check_call(
+        [python, "-m", "pip", "install", "--upgrade", "pipx"]
+    )
 
     bindir = pathlib.Path(os.environ.get("PIPX_BIN_DIR") or DEFAULT_BIN_DIR)
     bindir.mkdir(parents=True, exist_ok=True)
 
     pipx_exe = pathlib.Path(_find_exe(pipx_venv, "pipx")).resolve()
-    if pipx_exe.is_symlink():
-        pipx_exe.symlink_to(bindir.joinpath(pipx_exe.name))
-    else:
+    try:
+        bindir.joinpath(pipx_exe.name).symlink_to(pipx_exe)
+    except OSError:
         shutil.copy2(pipx_exe, bindir.joinpath(pipx_exe.name))
 
     subprocess.check_call([python, "-m", "pipx", "ensurepath"])
